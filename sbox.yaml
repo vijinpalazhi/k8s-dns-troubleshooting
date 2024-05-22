@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    io.kubernetes.cri-o.userns-mode: "auto:size=65536"
+  labels:
+    kodekloud.session/component: vm01
+    labs-manager.duration: "3600"
+    labs-manager.kubernetes_migrated: "true"
+  name: k3s-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      kodekloud.session/component: vm01
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        kodekloud.session/component: vm01
+    spec:
+      containers:
+        - name: controlplane
+          image: vpalazhi/k3test:v1
+          imagePullPolicy: Always
+          env:
+            - name: USER
+              value: "root"
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1500M"
+            requests:
+              cpu: "0.2"
+              memory: "512M"
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      runtimeClassName: sysbox-runc
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
